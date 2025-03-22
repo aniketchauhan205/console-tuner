@@ -1,4 +1,4 @@
-﻿#include<iostream>
+#include<iostream>
 #include<math.h>
 #include<complex>
 #include<SDL.h>
@@ -41,24 +41,8 @@ Note allNotes[] = {
     {"C5", 523.25}, {"C#5", 554.37}, {"D5", 587.33}, {"D#5", 622.25}, {"E5", 659.25}
     // Add more notes if needed
 };
+
 int allNotesCount = sizeof(allNotes) / sizeof(allNotes[0]);
-
-// Define standard tunings
-Note guitarTuning[] = {
-    {"E2", 82.41},
-    {"A2", 110.00},
-    {"D3", 146.83},
-    {"G3", 196.00},
-    {"B3", 246.94},
-    {"E4", 329.63}
-};
-
-Note ukuleleTuning[] = {
-    {"G4", 392.00},
-    {"C4", 261.63},
-    {"E4", 329.63},
-    {"A4", 440.00}
-};
 
 void RecCallback(void* userdata, Uint8* stream, int streamlength){
 
@@ -145,13 +129,32 @@ string frequencyToNoteName(double freq) {
 
     string noteNames[] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
-    int noteIndex = static_cast<int>(round(12 * log2(freq / 440.0))) % 12;  // Compute note index
+    int noteIndex = static_cast<int>(round(12 * log2(freq / 440.0))) + 9; // +9 shifts A4 to C4
+    noteIndex = noteIndex % 12;
+
 
     if (noteIndex < 0) noteIndex += 12;  // Ensure it’s always positive
 
     return noteNames[noteIndex]; // Return valid note name
 }
 
+void checkTuningStatus(float detectedFreq) {
+    Note nearestNote = findNearestNote(detectedFreq, allNotes, allNotesCount);
+
+    float notefreq = nearestNote.frequency;
+
+    float difference = detectedFreq - notefreq;
+
+    if (fabs(difference) <= 2.0) {
+        cout << "Tuning Status: IN TUNE " << endl;
+    }
+    else if (difference < -2.0) {
+        cout << "Tuning Status: TOO FLAT   (Tune Up)" << endl;
+    }
+    else if (difference > 2.0) {
+        cout << "Tuning Status: TOO SHARP  (Tune Down)" << endl;
+    }
+}
 
 
 int main(int argc, char** argv) {
@@ -198,18 +201,18 @@ int main(int argc, char** argv) {
 
         float dominantFreq = findDominantFrequency(spectrum, DATALEN, RATE);
         string noteName = frequencyToNoteName(dominantFreq);
+       
 
+        
         system("cls");
 
         cout << "Detected Frequency: " << dominantFreq << " Hz" << endl;
-        
+        cout << endl;
         cout << "Detected Note: " << noteName <<endl;
+        cout << endl;
+        checkTuningStatus(dominantFreq);  // Call the function to check tuning status
         
-        /*if (tuningStatus < 0) cout << "TOO FLAT ↓";
-        else if (tuningStatus > 0) cout << "TOO SHARP ↑";
-        else cout << "IN TUNE ✓";
-        cout << endl;*/
-
+        cout << endl;
         cout << pitchnames;
         for (int i = 20; i > 0; i--) {
             for (int j = 0; j < 96; j++) {
