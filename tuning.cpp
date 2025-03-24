@@ -140,19 +140,22 @@ string frequencyToNoteName(double freq) {
 
 void checkTuningStatus(float detectedFreq) {
     Note nearestNote = findNearestNote(detectedFreq, allNotes, allNotesCount);
+    float noteFreq = nearestNote.frequency;
 
-    float notefreq = nearestNote.frequency;
+    float tolerance = noteFreq * 0.01;  // ±1% tolerance
+    float lowerBound = noteFreq - tolerance;
+    float upperBound = noteFreq + tolerance; // Difference in Hz
 
-    float difference = detectedFreq - notefreq;
+    cout << "Detected Frequency: " << detectedFreq << " Hz" << endl;
 
-    if (fabs(difference) <= 2.0) {
+    if (detectedFreq >= lowerBound && detectedFreq <= lowerBound) {
         cout << "Tuning Status: IN TUNE " << endl;
     }
-    else if (difference < -2.0) {
-        cout << "Tuning Status: TOO FLAT   (Tune Up)" << endl;
+    else if (detectedFreq < lowerBound) {
+        cout << "Tuning Status: TOO FLAT  (Tune Up)" << endl;
     }
-    else if (difference > 2.0) {
-        cout << "Tuning Status: TOO SHARP  (Tune Down)" << endl;
+    else if (detectedFreq > lowerBound) {
+        cout << "Tuning Status: TOO SHARP (Tune Down)" << endl;
     }
 }
 
